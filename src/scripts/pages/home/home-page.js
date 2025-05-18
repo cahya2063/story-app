@@ -1,11 +1,13 @@
 import MapStory from "../../utils/map";
 import HomePresenter from "./home-presenter";
-
+import { saveStory, checkIfStorySaved } from "../../data/database";
 export default class HomePage {
   constructor() {
     this._map = null;
     this._marker = [];
     this.mapStory = null;
+    this.stories = [];
+    this.saveButtons = [];
   }
   async render() {
     return `
@@ -68,11 +70,52 @@ export default class HomePage {
             </span>
 
           </div>
+          <button class="save-btn btn" data-id="${story.id}">
+            Simpan
+          </button>
         </div>
       `;
       })
       .join("");
+    this.stories = storys;
     this.createMarker(storys);
+    this.setupSaveButtons()
+  }
+
+  setupSaveButtons() {
+    const buttons = document.querySelectorAll(".save-btn");
+
+  buttons.forEach((button) => {
+    button.addEventListener("click", this.handleSaveClick.bind(this));
+  });
+  }
+
+  async handleSaveClick(e) {
+    const button = e.currentTarget;
+    button.disabled = true;
+
+    try {
+      const storyId = button.dataset.id;
+      const story = this.stories.find((s) => s.id === storyId);
+
+      if (!story) return;
+
+      const isCurrentlySaved = await checkIfStorySaved(storyId);
+      if (isCurrentlySaved) {
+        alert("Cerita ini sudah disimpan sebelumnya");
+        return;
+      }
+
+      console.log(story);
+      
+      await saveStory(story);
+      alert("Cerita berhasil disimpan!");
+    } catch (error) {
+      console.error("Gagal menyimpan cerita:", error);
+      alert("Gagal menyimpan cerita");
+    } finally {
+      button.disabled = false;
+    }
   }
 
   createMarker(storys) {

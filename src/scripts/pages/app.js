@@ -107,36 +107,37 @@ class App {
   }
 
   async renderPage() {
-    // document.getElementById('main')    
-    const url = getActiveRoute();
-    const { page, auth } = routes[url];
+  const url = getActiveRoute();
+  const route = routes[url];
+  const page = route ? route.page : routes["/404"].page;
+  const auth = route ? route.auth : false;
 
-    const token = localStorage.getItem("token");
-    if (auth && !token) {
-      window.location.hash = "#/login";
-      return;
-    }
-
-    if (!document.startViewTransition) {
-      this.#content.innerHTML = await page.render();
-      await page.afterRender();
-    } else {
-      const transition = document.startViewTransition(async () => {
-        this.#content.innerHTML = await page.render();
-        await page.afterRender();
-      });
-
-      transition.updateCallbackDone.then(()=>{
-        scrollTo({top: 0, behavior: 'instant'})
-        this.#setupNavigationList()
-
-        if(isServiceWorkerAvailable()){          
-          this.#setupPushNotification()
-        }
-      })
-
-    }
+  const token = localStorage.getItem("token");
+  if (auth && !token) {
+    window.location.hash = "#/login";
+    return;
   }
+
+  if (!document.startViewTransition) {
+    this.#content.innerHTML = await page.render();
+    await page.afterRender?.();
+  } else {
+    const transition = document.startViewTransition(async () => {
+      this.#content.innerHTML = await page.render();
+      await page.afterRender?.();
+    });
+
+    transition.updateCallbackDone.then(() => {
+      scrollTo({ top: 0, behavior: "instant" });
+      this.#setupNavigationList();
+
+      if (isServiceWorkerAvailable()) {
+        this.#setupPushNotification();
+      }
+    });
+  }
+}
+
   
 }
 

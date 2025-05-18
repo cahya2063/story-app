@@ -12,7 +12,7 @@ class CreateStory {
         <h2 tabindex="0">Tambah Story</h2>
         <form id="addStoryForm" aria-label="Form tambah story" role="form">
           <label for="photo">Pilih Foto dari Galeri</label>
-          <input id="photo" type="file" accept="image/*" aria-label="Upload foto dari galeri" />
+          <input id="photo" type="file" class="input-image" accept="image/*" aria-label="Upload foto dari galeri" />
 
           <p>Atau ambil langsung dari kamera:</p>
           <video id="cameraPreview" autoplay playsinline width="300" height="200" aria-label="Preview Kamera" style="border:1px solid #ccc;"></video>

@@ -1,58 +1,66 @@
 import { precacheAndRoute } from "workbox-precaching";
-import { registerRoute } from 'workbox-routing';
-import { CacheableResponsePlugin } from 'workbox-cacheable-response';
-import { NetworkFirst, CacheFirst, StaleWhileRevalidate } from 'workbox-strategies';
-import { API_URL } from "./config";
+import { registerRoute } from "workbox-routing";
+import {
+  NetworkFirst,
+  CacheFirst,
+  StaleWhileRevalidate,
+} from "workbox-strategies";
+import { CacheableResponsePlugin } from "workbox-cacheable-response";
 
-// event untuk melakukan precaching
-const manifest = self.__WB_MANIFEST;
-precacheAndRoute(manifest);
+precacheAndRoute(self.__WB_MANIFEST);
 
-// runtime caching
+// API stories
 registerRoute(
-  ({url})=>{
-    return (
-      url.origin === 'https://fonts.googleapis.com' || url.origin === 'https://fonts.gstatic.com'
-    )
-  },
-
-  CacheFirst({
-    cacheName: 'google-font'
-  })
-)
-
-registerRoute(
-  ({request, url})=>{
-    const baseUrl = new URL(API_URL.BASE_URL)
-    return baseUrl.origin === url.origin && request.destination != 'image'
-  },
-
+  ({ url }) =>
+    url.origin === "https://story-api.dicoding.dev" &&
+    url.pathname.startsWith("/v1/stories"),
   new NetworkFirst({
-    cacheName: 'story-api'
-  })
-
-)
-
+    cacheName: "story-api-cache",
+    plugins: [new CacheableResponsePlugin({ statuses: [0, 200] })],
+  }),
+);
 registerRoute(
-  ({request, url})=>{
-    const baseUrl = new URL(API_URL.BASE_URL)
-    return baseUrl.origin === url.origin && request.destination === 'image'
-  },
-
+  ({ url }) =>
+    url.origin === "https://story-api.dicoding.dev" &&
+    url.pathname.startsWith("/images/stories/"),
   new StaleWhileRevalidate({
-    cacheName: 'story-api-image'
-  })
-)
+    cacheName: "story-images-cache",
+    plugins: [new CacheableResponsePlugin({ statuses: [0, 200] })],
+  }),
+);
 
+// Google Fonts & FontAwesome
 registerRoute(
-  ({url})=>{
-    return url.origin.includes('maptiler')
+  ({ url }) =>
+    url.origin === "https://fonts.googleapis.com" ||
+    url.origin === "https://fonts.gstatic.com",
+  new CacheFirst({ cacheName: "google-fonts" }),
+);
+registerRoute(
+  ({ url }) =>
+    url.origin === "https://cdnjs.cloudflare.com" ||
+    url.origin.includes("fontawesome"),
+  new CacheFirst({ cacheName: "fontawesome" }),
+);
 
-  },
-  new NetworkFirst({
-    cacheName: 'maptiler-api'
-  })
-)
+// Leaflet CDN
+registerRoute(
+  ({ url }) =>
+    url.origin === "https://unpkg.com" && url.pathname.startsWith("/leaflet@"),
+  new CacheFirst({
+    cacheName: "leaflet-cdn-cache",
+    plugins: [new CacheableResponsePlugin({ statuses: [0, 200] })],
+  }),
+);
+
+// OpenStreetMap Tiles
+registerRoute(
+  ({ url }) => url.origin === "https://tile.openstreetmap.org",
+  new CacheFirst({
+    cacheName: "osm-tiles-cache",
+    plugins: [new CacheableResponsePlugin({ statuses: [0, 200] })],
+  }),
+);
 
 
 

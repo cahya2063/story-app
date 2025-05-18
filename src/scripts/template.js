@@ -12,6 +12,11 @@ export function headerLogin() {
           </a>
         </li>
         <li>
+          <a href="#/save-story" id="home-button">
+            <i class="fas fa-bookmark"></i> Simpan Cerita
+          </a>
+        </li>
+        <li>
           <button id="logout-button">
             <i class="fas fa-sign-out-alt"></i>Keluar
           </button>
